@@ -1,5 +1,6 @@
 ﻿using CadastroCLientes.Data;
 using CadastroCLientes.Models;
+using CadastroCLientes.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -12,23 +13,23 @@ namespace CadastroClientes.Controllers
     [ApiController]
     public class ClientesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ClienteRepository _repository;
 
-        public ClientesController(AppDbContext context)
+        public ClientesController(ClienteRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Cliente>>> GetClientes()
         {
-            return await _context.Clientes.ToListAsync();
+            return await _repository.GetClientes();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Cliente>> GetCliente(int id)
         {
-            var cliente = await _context.Clientes.FindAsync(id);
+            var cliente = await _repository.GetClienteById(id);
 
             if (cliente == null)
             {
@@ -42,37 +43,16 @@ namespace CadastroClientes.Controllers
         public async Task<IActionResult> PutCliente(int id, Cliente cliente)
         {
             if (id != cliente.Id)
-            {
                 return BadRequest();
-            }
 
-            _context.Entry(cliente).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ClienteExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return Ok(await _repository.UpdateCliente(cliente));
         }
 
         [HttpPost]
         public async Task<ActionResult<Cliente>> PostCliente(Cliente cliente)
         {
 
-            _context.Clientes.Add(cliente);
-            await _context.SaveChangesAsync();
+           var novoCliente = await _repository.AddCliente(cliente);
 
             return CreatedAtAction("GetCliente", new { id = cliente.Id }, cliente);
         }
@@ -80,21 +60,11 @@ namespace CadastroClientes.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCliente(int id)
         {
-            var cliente = await _context.Clientes.FindAsync(id);
-            if (cliente == null)
-            {
-                return NotFound();
-            }
-
-            _context.Clientes.Remove(cliente);
-            await _context.SaveChangesAsync();
-
+            await _repository.DeleteCliente(id);
+    
             return NoContent();
         }
 
-        private bool ClienteExists(int id)
-        {
-            return _context.Clientes.Any(e => e.Id == id);
-        }
+
     }
 }

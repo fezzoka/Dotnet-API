@@ -39,7 +39,7 @@ namespace CadastroCLientes.Repository
             return clienteAlterado;
             }
 
-        public async void DeleteCliente(int id)
+        public async Task DeleteCliente(int id)
         {
             var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.Id == id);
             _context.Clientes.Remove(cliente);

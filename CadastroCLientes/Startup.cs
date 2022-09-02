@@ -1,4 +1,5 @@
 using CadastroCLientes.Data;
+using CadastroCLientes.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -30,6 +31,7 @@ namespace CadastroCLientes
         {
             services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("MeuDb")));
+            services.AddScoped<ClienteRepository>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
